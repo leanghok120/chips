@@ -2,10 +2,13 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define KEY_Q 113
 #define KEY_J 106
 #define KEY_K 107
+#define KEY_G 71
+#define KEY_GG 103
 
 typedef struct {
   char *name;
@@ -14,6 +17,7 @@ typedef struct {
 
 typedef struct {
   entry entries[1024];
+  char cwd_path[512];
   int len;
   int selected;
 } state;
@@ -42,6 +46,8 @@ void cleanup() {
 }
 
 void getentries(state *s) {
+  getcwd(s->cwd_path, 512);
+
   while ((de = readdir(cwd)) != NULL) {
     s->entries[s->len].name = de->d_name;
     s->entries[s->len].type = de->d_type;
@@ -51,6 +57,11 @@ void getentries(state *s) {
 
 void drawentries(state *s) {
   clear();
+
+  attron(A_BOLD);
+  printw("%s\n\n", s->cwd_path);
+  attroff(A_BOLD);
+
   for (int i = 0; i < s->len; i++) {
     if (i == s->selected) {
       attron(A_REVERSE);
@@ -82,6 +93,14 @@ int main() {
     }
     if (input == KEY_K && s.selected > 0) {
       s.selected--;
+      drawentries(&s);
+    }
+    if (input == KEY_GG) {
+      s.selected = 0;
+      drawentries(&s);
+    }
+    if (input == KEY_G) {
+      s.selected = s.len - 1;
       drawentries(&s);
     }
 
