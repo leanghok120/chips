@@ -12,11 +12,14 @@ typedef struct {
   unsigned char type;
 } entry;
 
+typedef struct {
+  entry entries[1024];
+  int len;
+  int selected;
+} state;
+
 DIR *cwd;
 struct dirent *de;
-entry entries[1024];
-int len = 0;
-int selected = 0;
 int input = 0;
 
 void init() {
@@ -38,25 +41,25 @@ void cleanup() {
   endwin();
 }
 
-void getentries() {
+void getentries(state *s) {
   while ((de = readdir(cwd)) != NULL) {
-    entries[len].name = de->d_name;
-    entries[len].type = de->d_type;
-    len++;
+    s->entries[s->len].name = de->d_name;
+    s->entries[s->len].type = de->d_type;
+    s->len++;
   }
 }
 
-void drawentries() {
+void drawentries(state *s) {
   clear();
-  for (int i = 0; i < len; i++) {
-    if (i == selected) {
+  for (int i = 0; i < s->len; i++) {
+    if (i == s->selected) {
       attron(A_REVERSE);
     }
 
-    if (entries[i].type == DT_DIR) {
-      printw("%s/\n", entries[i].name);
+    if (s->entries[i].type == DT_DIR) {
+      printw("%s/\n", s->entries[i].name);
     } else {
-      printw("%s\n", entries[i].name);
+      printw("%s\n", s->entries[i].name);
     }
 
     attroff(A_REVERSE);
@@ -66,19 +69,20 @@ void drawentries() {
 }
 
 int main() {
+  state s = {0};
   init();
 
-  getentries();
-  drawentries();
+  getentries(&s);
+  drawentries(&s);
 
   while (input != KEY_Q) {
-    if (input == KEY_J && selected < len - 1) {
-      selected++;
-      drawentries();
+    if (input == KEY_J && s.selected < s.len - 1) {
+      s.selected++;
+      drawentries(&s);
     }
-    if (input == KEY_K && selected > 0) {
-      selected--;
-      drawentries();
+    if (input == KEY_K && s.selected > 0) {
+      s.selected--;
+      drawentries(&s);
     }
 
     input = getch();
