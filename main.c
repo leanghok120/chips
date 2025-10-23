@@ -47,6 +47,8 @@ void cleanup() {
 
 void getentries(state *s) {
   getcwd(s->cwd_path, 512);
+  s->len = 0;
+  s->selected = 0;
 
   while ((de = readdir(cwd)) != NULL) {
     s->entries[s->len].name = de->d_name;
@@ -102,6 +104,16 @@ int main() {
     if (input == KEY_G) {
       s.selected = s.len - 1;
       drawentries(&s);
+    }
+    if (input == '\n' || input == KEY_ENTER) {
+      entry selected = s.entries[s.selected];
+      if (selected.type == DT_DIR) {
+        closedir(cwd);
+        chdir(selected.name);
+        cwd = opendir(".");
+        getentries(&s);
+        drawentries(&s);
+      }
     }
 
     input = getch();
