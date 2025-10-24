@@ -41,6 +41,12 @@ void init() {
   keypad(stdscr, TRUE);
   noecho();
   curs_set(0);
+  start_color();
+  use_default_colors();
+
+  init_pair(1, COLOR_BLUE, -1);
+  init_pair(2, COLOR_WHITE, -1);
+  init_pair(3, COLOR_BLACK, COLOR_BLUE);
 }
 
 void cleanup() {
@@ -71,18 +77,23 @@ void drawentries(state *s) {
   printw("%s\n\n", s->cwd_path);
   attroff(A_BOLD);
 
+  int color = 0;
   for (int i = 0; i < s->len; i++) {
     if (i == s->selected) {
-      attron(A_REVERSE);
+      color = 3;
+    } else if (s->entries[i].type == DT_DIR) {
+      color = 1;
+    } else {
+      color = 2;
     }
 
+    attron(COLOR_PAIR(color));
     if (s->entries[i].type == DT_DIR) {
       printw("%s/\n", s->entries[i].name);
     } else {
       printw("%s\n", s->entries[i].name);
     }
-
-    attroff(A_REVERSE);
+    attroff(COLOR_PAIR(color));
   }
 
   refresh();
