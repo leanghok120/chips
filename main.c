@@ -2,12 +2,14 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define KEY_Q 113
 #define KEY_J 106
 #define KEY_K 107
 #define KEY_L 108
+#define KEY_H 104
 #define KEY_G 71
 #define KEY_GG 103
 
@@ -52,6 +54,10 @@ void getentries(state *s) {
   s->selected = 0;
 
   while ((de = readdir(cwd)) != NULL) {
+    if (!strcmp(de->d_name, "..") || !strcmp(de->d_name, ".")) {
+      continue;
+    }
+
     s->entries[s->len].name = de->d_name;
     s->entries[s->len].type = de->d_type;
     s->len++;
@@ -119,6 +125,9 @@ int main() {
       if (selected.type == DT_DIR) {
         changedir(&s, selected.name);
       }
+    }
+    if (input == KEY_H) {
+      changedir(&s, "..");
     }
 
     input = getch();
