@@ -7,6 +7,7 @@
 #define KEY_Q 113
 #define KEY_J 106
 #define KEY_K 107
+#define KEY_L 108
 #define KEY_G 71
 #define KEY_GG 103
 
@@ -81,6 +82,14 @@ void drawentries(state *s) {
   refresh();
 }
 
+void changedir(state *s, const char *name) {
+  closedir(cwd);
+  chdir(name);
+  cwd = opendir(".");
+  getentries(s);
+  drawentries(s);
+}
+
 int main() {
   state s = {0};
   init();
@@ -105,14 +114,10 @@ int main() {
       s.selected = s.len - 1;
       drawentries(&s);
     }
-    if (input == '\n' || input == KEY_ENTER) {
+    if (input == '\n' || input == KEY_ENTER || input == KEY_L) {
       entry selected = s.entries[s.selected];
       if (selected.type == DT_DIR) {
-        closedir(cwd);
-        chdir(selected.name);
-        cwd = opendir(".");
-        getentries(&s);
-        drawentries(&s);
+        changedir(&s, selected.name);
       }
     }
 
