@@ -107,6 +107,12 @@ void changedir(state *s, const char *name) {
   drawentries(s);
 }
 
+void openfile(char *name) {
+  char *editor = getenv("EDITOR");
+  char *argv[] = {editor, name, NULL};
+  execvp(editor, argv);
+}
+
 int main() {
   state s = {0};
   init();
@@ -135,6 +141,8 @@ int main() {
       entry selected = s.entries[s.selected];
       if (selected.type == DT_DIR) {
         changedir(&s, selected.name);
+      } else {
+        openfile(selected.name);
       }
     }
     if (input == KEY_H) {
