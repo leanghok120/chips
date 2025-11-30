@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #define KEY_Q 113
 #define KEY_J 106
@@ -108,9 +109,17 @@ void changedir(state *s, const char *name) {
 }
 
 void openfile(char *name) {
-  char *editor = getenv("EDITOR");
-  char *argv[] = {editor, name, NULL};
-  execvp(editor, argv);
+  endwin();
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    execlp("xdg-open", "xdg-open", name, NULL);
+    exit(1);
+  } else {
+    waitpid(pid, NULL, 0);
+  }
+
+  refresh();
 }
 
 int main() {
